@@ -1,5 +1,6 @@
 <?php
 
+use http\Client\Response;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+Route::get('/country/{country}', function ($country) {
+    $client = new GuzzleHttp\Client();
+    try {
+        $res = $client->request('GET', 'https://restcountries.eu/rest/v2/name/' . $country);
+        if($res->getStatusCode() === 200)
+            return $res->getBody();
+        else{
+            return view('errors.missing', ['problem' => $res->getStatusCode()]);
+        }
+    }catch (GuzzleHttp\Exception\ClientException $e){
+        return view('errors.missing', ['problem' => $e->getMessage()]);
+    }
 });
